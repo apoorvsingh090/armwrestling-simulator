@@ -1,0 +1,732 @@
+{
+ "meta": {
+  "source": "R2_MUSCLE_TENDON_SPEC.md; parameters P026/P027; Seth2019 bundles; Zajac1989 STD",
+  "rule": "MODEL rows need calibration before torque-credibility claims; bundle-map conflict documented, not resolved"
+ },
+ "biceps_long": {
+  "PCSA_cm2": {
+   "value": 4.6,
+   "tag": "E:P026"
+  },
+  "Lopt_m": {
+   "value": 0.1412,
+   "tag": "M:Seth2019",
+   "conflict": "P026 single-head cadaveric 0.232m \u2014 bundle-map conflict, model set kept self-consistent"
+  },
+  "pennation_deg": {
+   "value": 0.0,
+   "tag": "M:Seth2019"
+  },
+  "slack_m": {
+   "value": 0.257,
+   "tag": "M:Seth2019",
+   "note": "unused in rigid-tendon branch"
+  },
+  "Fmax_N": {
+   "value": 485.8,
+   "tag": "M:Seth2019-calibration-flagged",
+   "alt_pcsa_derived": "PCSA x sigma (sigma UNKNOWN; PROV-01 50 -> 230N)"
+  },
+  "roles": {
+   "elbow": 1,
+   "forearm": -1
+  },
+  "fatigue": {
+   "kf": null,
+   "kr": null,
+   "note": "null = global defaults (warned at construction)"
+  }
+ },
+ "triceps_long": {
+  "PCSA_cm2": {
+   "value": 10.3,
+   "tag": "E:P027"
+  },
+  "Lopt_m": {
+   "value": 0.0969,
+   "tag": "M:Seth2019",
+   "conflict": "P027 single-head cadaveric 0.454m (flagged long) \u2014 bundle-map conflict, model set kept self-consistent"
+  },
+  "pennation_deg": {
+   "value": 10.0,
+   "tag": "M:Seth2019"
+  },
+  "slack_m": {
+   "value": 0.241,
+   "tag": "M:Seth2019",
+   "note": "unused in rigid-tendon branch"
+  },
+  "Fmax_N": {
+   "value": 1580.6,
+   "tag": "M:Seth2019-calibration-flagged",
+   "alt_pcsa_derived": "PCSA x sigma (sigma UNKNOWN; PROV-01 50 -> 515N)"
+  },
+  "roles": {
+   "elbow": -1,
+   "forearm": 0
+  },
+  "fatigue": {
+   "kf": null,
+   "kr": null,
+   "note": "null = global defaults (warned at construction)"
+  }
+ },
+ "hill_STD": {
+  "tendon_strain_at_Fmax": 0.033,
+  "tendon_stress_at_Fmax_MPa": 32.0,
+  "passive_eps0": 1.8,
+  "fl_form": "gaussian",
+  "fv_form": "linear-E11-corpus-branch"
+ },
+ "moment_arms_elbow": {
+  "method": "PCHIP over discrete points (Fritsch-Carlson); NO polynomial fits",
+  "rule": "Only 'E' points are measurements. 'P' points are MODEL_DERIVED-PLACEHOLDER (constitution rule 4): shape honors Murray1995 (biceps peak 100-120deg window; >=30% variation per P050) and P038/P041 anchors. Replace by digitizing Murray1995/Amis1979 curves.",
+  "biceps_flexion": {
+   "unit": "m",
+   "points_deg_m_tag": [
+    [
+     0,
+     0.0306,
+     "P"
+    ],
+    [
+     15,
+     0.033,
+     "P"
+    ],
+    [
+     30,
+     0.036,
+     "P"
+    ],
+    [
+     45,
+     0.039,
+     "P"
+    ],
+    [
+     60,
+     0.042,
+     "P"
+    ],
+    [
+     75,
+     0.0445,
+     "P"
+    ],
+    [
+     90,
+     0.046,
+     "P"
+    ],
+    [
+     105,
+     0.0469,
+     "P"
+    ],
+    [
+     110,
+     0.047,
+     "E:P038"
+    ],
+    [
+     125,
+     0.0455,
+     "P"
+    ],
+    [
+     145,
+     0.042,
+     "P"
+    ]
+   ]
+  },
+  "triceps_extension": {
+   "unit": "m",
+   "points_deg_m_tag": [
+    [
+     0,
+     0.018,
+     "P"
+    ],
+    [
+     30,
+     0.02,
+     "P"
+    ],
+    [
+     60,
+     0.022,
+     "P"
+    ],
+    [
+     90,
+     0.023,
+     "E:P041"
+    ],
+    [
+     110,
+     0.0225,
+     "P"
+    ],
+    [
+     130,
+     0.0205,
+     "P"
+    ],
+    [
+     145,
+     0.019,
+     "P"
+    ]
+   ]
+  },
+  "pt_flexion": {
+   "unit": "m",
+   "note": "weak-flexor PLACEHOLDER constant (no data); all points P",
+   "points_deg_m_tag": [
+    [
+     0,
+     0.01,
+     "P"
+    ],
+    [
+     45,
+     0.01,
+     "P"
+    ],
+    [
+     90,
+     0.01,
+     "P"
+    ],
+    [
+     130,
+     0.01,
+     "P"
+    ],
+    [
+     145,
+     0.01,
+     "P"
+    ]
+   ]
+  },
+  "brd_flexion": {
+   "unit": "m",
+   "note": "peak E:P039; shape honors 100-120deg model peak window",
+   "points_deg_m_tag": [
+    [
+     0,
+     0.05,
+     "P"
+    ],
+    [
+     45,
+     0.06,
+     "P"
+    ],
+    [
+     90,
+     0.072,
+     "P"
+    ],
+    [
+     110,
+     0.077,
+     "E:P039"
+    ],
+    [
+     130,
+     0.07,
+     "P"
+    ],
+    [
+     145,
+     0.062,
+     "P"
+    ]
+   ]
+  },
+  "fcr_flexion": {
+   "unit": "m",
+   "note": "weak-flexor PLACEHOLDER constant (PT-precedent, no data)",
+   "points_deg_m_tag": [
+    [
+     0,
+     0.01,
+     "P"
+    ],
+    [
+     145,
+     0.01,
+     "P"
+    ]
+   ]
+  },
+  "fcu_flexion": {
+   "unit": "m",
+   "note": "weak-flexor PLACEHOLDER constant (PT-precedent, no data)",
+   "points_deg_m_tag": [
+    [
+     0,
+     0.01,
+     "P"
+    ],
+    [
+     145,
+     0.01,
+     "P"
+    ]
+   ]
+  }
+ },
+ "pronator_teres": {
+  "PCSA_cm2": {
+   "value": 1.1,
+   "tag": "E:P029"
+  },
+  "Lopt_m": {
+   "value": 0.055,
+   "tag": "E:P029"
+  },
+  "pennation_deg": {
+   "value": 0.0,
+   "tag": "U:default-no-data"
+  },
+  "Fmax_N": {
+   "value": 55.0,
+   "tag": "M:1.1cm2-x-PROV-01-50-NOT-measured"
+  },
+  "roles": {
+   "elbow": 1,
+   "forearm": 1
+  },
+  "note": "slack intentionally absent -> loader warns (rigid branch)",
+  "fatigue": {
+   "kf": null,
+   "kr": null,
+   "note": "null = global defaults (warned at construction)"
+  }
+ },
+ "pronator_quadratus": {
+  "Fmax_N": {
+   "value": 0.0,
+   "tag": "U:zero-torque-placeholder-no-architecture-data"
+  },
+  "Lopt_m": {
+   "value": 0.05,
+   "tag": "P:arbitrary-inert-Fmax-zero"
+  },
+  "pennation_deg": {
+   "value": 0.0,
+   "tag": "U:default-no-data"
+  },
+  "roles": {
+   "elbow": 0,
+   "forearm": 1
+  },
+  "note": "fully inert until measured; slack absent -> loader warns",
+  "fatigue": {
+   "kf": null,
+   "kr": null,
+   "note": "null = global defaults (warned at construction)"
+  }
+ },
+ "supinator": {
+  "Fmax_N": {
+   "value": 0.0,
+   "tag": "U:zero-torque-placeholder-no-architecture-data"
+  },
+  "Lopt_m": {
+   "value": 0.05,
+   "tag": "P:arbitrary-inert-Fmax-zero"
+  },
+  "pennation_deg": {
+   "value": 0.0,
+   "tag": "U:default-no-data"
+  },
+  "roles": {
+   "elbow": 0,
+   "forearm": -1
+  },
+  "note": "fully inert until measured; slack absent -> loader warns",
+  "fatigue": {
+   "kf": null,
+   "kr": null,
+   "note": "null = global defaults (warned at construction)"
+  }
+ },
+ "brachioradialis": {
+  "PCSA_cm2": {
+   "value": 1.2,
+   "tag": "E:P028-C-06-disputed"
+  },
+  "Lopt_m": {
+   "value": 0.177,
+   "tag": "E:P028"
+  },
+  "pennation_deg": {
+   "value": 0.0,
+   "tag": "U:default-no-data"
+  },
+  "Fmax_N": {
+   "value": 60.0,
+   "tag": "M:1.2cm2-x-PROV-01-50-NOT-measured"
+  },
+  "roles": {
+   "elbow": 1,
+   "forearm": 0
+  },
+  "note": "rotation sign-flip (Murray1995) OMITTED per scope (role_forearm=0); slack absent -> loader warns",
+  "fatigue": {
+   "kf": null,
+   "kr": null,
+   "note": "null = global defaults (warned at construction)"
+  }
+ },
+ "moment_arms_forearm_2d": {
+  "method": "bilinear over (elbow_rows x forearm_cols); NO fitted functions; E envelope 1.1-1.3cm supination peak (Murray1995/Favre), PT 0.5/0.75/1.2cm disagreement carried as midpoint+M tag",
+  "biceps_supination": {
+   "unit": "m",
+   "rows_elbow_deg": [
+    45,
+    90,
+    130
+   ],
+   "row_scale_note": "90deg=1.0 best supinator (Bremer2006); 45deg=0.85; 130deg=0.8 (decreases with extension; ratios P)",
+   "cols_forearm_deg": [
+    -87,
+    -60,
+    -30,
+    0,
+    30,
+    55,
+    80
+   ],
+   "col_note": "peak neutral..55pro, min near -60sup (Favre-review); base row midpoint of 1.1-1.3cm envelope",
+   "values_m": [
+    [
+     0.005525,
+     0.004675,
+     0.0068,
+     0.00935,
+     0.0102,
+     0.0102,
+     0.0085
+    ],
+    [
+     0.0065,
+     0.0055,
+     0.008,
+     0.011,
+     0.012,
+     0.012,
+     0.01
+    ],
+    [
+     0.0052,
+     0.0044,
+     0.0064,
+     0.0088,
+     0.0096,
+     0.0096,
+     0.008
+    ]
+   ],
+   "tags": "all P except 90deg-row peak cells M:envelope-midpoint"
+  },
+  "pt_pronation": {
+   "unit": "m",
+   "rows_elbow_deg": [
+    30,
+    75,
+    90,
+    130
+   ],
+   "row_note": "strongly elbow-coupled (P040); amplitude scale P (75deg peak per model flexion-MA window)",
+   "cols_forearm_deg": [
+    -87,
+    -60,
+    -30,
+    0,
+    30,
+    55,
+    80
+   ],
+   "col_note": "peaks near neutral each row (Murray1995); magnitudes span 0.5-1.2 specimen disagreement",
+   "values_m": [
+    [
+     0.00225,
+     0.003375,
+     0.004875,
+     0.006,
+     0.005625,
+     0.0045,
+     0.003375
+    ],
+    [
+     0.0033,
+     0.00495,
+     0.00715,
+     0.0088,
+     0.00825,
+     0.0066,
+     0.00495
+    ],
+    [
+     0.003,
+     0.0045,
+     0.0065,
+     0.008,
+     0.0075,
+     0.006,
+     0.0045
+    ],
+    [
+     0.00255,
+     0.003825,
+     0.005525,
+     0.0068,
+     0.006375,
+     0.0051,
+     0.003825
+    ]
+   ],
+   "tags": "all P (magnitude envelope 0.5-1.2cm unresolved)"
+  },
+  "pq_pronation": {
+   "unit": "m",
+   "rows_elbow_deg": [
+    90
+   ],
+   "cols_forearm_deg": [
+    0
+   ],
+   "values_m": [
+    [
+     0.0
+    ]
+   ],
+   "tags": "P-zero-placeholder (no magnitudes exist)"
+  },
+  "supinator_sup": {
+   "unit": "m",
+   "rows_elbow_deg": [
+    90
+   ],
+   "cols_forearm_deg": [
+    0
+   ],
+   "values_m": [
+    [
+     0.0
+    ]
+   ],
+   "tags": "P-zero-placeholder (no magnitudes exist)"
+  }
+ },
+ "fcr_flexor_carpi_radialis": {
+  "PCSA_cm2": {
+   "value": null,
+   "tag": "U:no-data-R2-extraction-target"
+  },
+  "Lopt_m": {
+   "value": 0.05,
+   "tag": "P:arbitrary-inert-Fmax-zero"
+  },
+  "pennation_deg": {
+   "value": 0.0,
+   "tag": "U:default-no-data"
+  },
+  "Fmax_N": {
+   "value": 0.0,
+   "tag": "U:zero-torque-placeholder-no-architecture-data"
+  },
+  "roles": {
+   "elbow": 1,
+   "forearm": 0,
+   "wrist_fe": 1,
+   "wrist_rud": 1
+  },
+  "note": "elbow weak-flexor placeholder table 0.010 (PT-precedent); wrist anchors E:P042; slack absent -> warns",
+  "fatigue": {
+   "kf": null,
+   "kr": null,
+   "note": "null = global defaults (warned at construction)"
+  }
+ },
+ "fcu_flexor_carpi_ulnaris": {
+  "PCSA_cm2": {
+   "value": null,
+   "tag": "U:no-data-R2-extraction-target"
+  },
+  "Lopt_m": {
+   "value": 0.05,
+   "tag": "P:arbitrary-inert-Fmax-zero"
+  },
+  "pennation_deg": {
+   "value": 0.0,
+   "tag": "U:default-no-data"
+  },
+  "Fmax_N": {
+   "value": 0.0,
+   "tag": "U:zero-torque-placeholder-no-architecture-data"
+  },
+  "roles": {
+   "elbow": 1,
+   "forearm": 0,
+   "wrist_fe": 1,
+   "wrist_rud": -1
+  },
+  "note": "elbow weak-flexor placeholder table 0.010 (PT-precedent); wrist anchors E:P043; slack absent -> warns",
+  "fatigue": {
+   "kf": null,
+   "kr": null,
+   "note": "null = global defaults (warned at construction)"
+  }
+ },
+ "ecr_extensor_carpi_radialis": {
+  "PCSA_cm2": {
+   "value": null,
+   "tag": "U:no-data-R2-extraction-target"
+  },
+  "Lopt_m": {
+   "value": 0.05,
+   "tag": "P:arbitrary-inert-Fmax-zero"
+  },
+  "pennation_deg": {
+   "value": 0.0,
+   "tag": "U:default-no-data"
+  },
+  "Fmax_N": {
+   "value": 0.0,
+   "tag": "U:zero-torque-placeholder-no-architecture-data"
+  },
+  "roles": {
+   "elbow": 0,
+   "forearm": 0,
+   "wrist_fe": -1,
+   "wrist_rud": 1
+  },
+  "note": "combined longus+brevis; magnitudes = mean of ECRL/ECRB anchors (M-combination of P045/P046); elbow action omitted (no data, smaller than flexors); slack absent -> warns",
+  "fatigue": {
+   "kf": null,
+   "kr": null,
+   "note": "null = global defaults (warned at construction)"
+  }
+ },
+ "ecu_extensor_carpi_ulnaris": {
+  "PCSA_cm2": {
+   "value": null,
+   "tag": "U:no-data-R2-extraction-target"
+  },
+  "Lopt_m": {
+   "value": 0.05,
+   "tag": "P:arbitrary-inert-Fmax-zero"
+  },
+  "pennation_deg": {
+   "value": 0.0,
+   "tag": "U:default-no-data"
+  },
+  "Fmax_N": {
+   "value": 0.0,
+   "tag": "U:zero-torque-placeholder-no-architecture-data"
+  },
+  "roles": {
+   "elbow": 0,
+   "forearm": 0,
+   "wrist_fe": -1,
+   "wrist_rud": -1
+  },
+  "note": "wrist anchors E:P044; elbow action omitted (no data); slack absent -> warns",
+  "fatigue": {
+   "kf": null,
+   "kr": null,
+   "note": "null = global defaults (warned at construction)"
+  }
+ },
+ "moment_arms_wrist_const": {
+  "method": "CONSTANT magnitudes (PCHIP/bilinear unjustified: only single-posture anchors exist). KNOWN ~35% error class (P051 wrist constant-MA finding) \u2014 carried explicitly, NOT hidden.",
+  "fcr": {
+   "fe_m": [
+    0.0122,
+    "E:P042"
+   ],
+   "rud_m": [
+    0.0102,
+    "E:P042"
+   ]
+  },
+  "fcu": {
+   "fe_m": [
+    0.0113,
+    "E:P043"
+   ],
+   "rud_m": [
+    0.0117,
+    "E:P043"
+   ]
+  },
+  "ecr": {
+   "fe_m": [
+    0.0087,
+    "M:mean-ECRL-ECRB-P045-P046"
+   ],
+   "rud_m": [
+    0.0136,
+    "M:mean-ECRL-ECRB-P045-P046"
+   ]
+  },
+  "ecu": {
+   "fe_m": [
+    0.004,
+    "E:P044"
+   ],
+   "rud_m": [
+    0.0237,
+    "E:P044"
+   ]
+  }
+ },
+ "fatigue_global": {
+  "tag": "PROVISIONAL (general exercise physiology; arm-wrestling rates UNKNOWN)",
+  "kf_per_s": [
+   0.005,
+   "range 0.001-0.01"
+  ],
+  "kr_per_s": [
+   0.002,
+   "range 0.0005-0.005, slower than kf"
+  ],
+  "concentric": 1.0,
+  "isometric": [
+   0.8,
+   "PROVISIONAL"
+  ],
+  "eccentric": [
+   0.6,
+   "PROVISIONAL"
+  ],
+  "between_round_recovery": "NOT implemented (continuous matches only)"
+ },
+ "uncertainty": {
+  "tag": "PROVISIONAL (inter-specimen variability; arm-wrestling distributions UNKNOWN)",
+  "Fmax": {
+   "dist": "normal",
+   "mean_mult": 1.0,
+   "std_frac": 0.1
+  },
+  "moment_arm": {
+   "dist": "normal",
+   "mean_mult": 1.0,
+   "std_frac": 0.15,
+   "note": "std ~ P051 35% error / 2"
+  },
+  "fatigue_rates": {
+   "dist": "lognormal",
+   "sigma": 0.5,
+   "median_mult": 1.0
+  }
+ }
+}

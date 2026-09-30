@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arm-Wrestling Physics Demo (validated engine, visual client)</title>
+<style>
+  body { margin: 0; font-family: system-ui, sans-serif; background: #101418; color: #e8ecef; }
+  #ui { position: fixed; top: 0; left: 0; padding: 12px; background: rgba(16,20,24,.85); z-index: 10; max-width: 320px; }
+  #ui label { display: block; margin: 6px 0 2px; font-size: 13px; }
+  #ui select, #ui button, #ui input { width: 100%; margin-bottom: 4px; }
+  #banner { position: fixed; top: 12px; right: 16px; font-size: 22px; font-weight: bold; z-index: 10; }
+  #status { font-size: 12px; color: #9fb3c8; margin-top: 6px; white-space: pre-wrap; }
+  #flags { font-size: 11px; color: #8a97a3; margin-top: 6px; }
+  canvas { display: block; }
+</style>
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+               "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+</script>
+</head>
+<body>
+<div id="ui">
+  <label>Athlete A <select id="techA"></select></label>
+  <label>Athlete B <select id="techB"></select></label>
+  <label>Duration (s) <input id="dur" type="number" value="2" min="0.5" max="10" step="0.5"></label>
+  <button id="run">Run match</button>
+  <button id="play" disabled>Play / pause</button>
+  <label>Scrub <input id="scrub" type="range" min="0" max="0" value="0"></label>
+  <div id="status">loading techniques…</div>
+  <div id="flags">visual FK flags: inertial lengths provisional; grips meet ≈7cm at neutral by staging.</div>
+</div>
+<div id="banner"></div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x101418);
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.01, 50);
+camera.position.set(0.9, 1.6, 1.4);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
+new OrbitControls(camera, renderer.domElement).target.set(0, 1.1, 0);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x334455, 1.2));
+const sun = new THREE.DirectionalLight(0xffffff, 1.5);
+sun.position.set(1, 3, 2);
+scene.add(sun);
+
+const mat = (c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.6 });
+const M = { table: mat(0x5a4632), pad: mat(0x27436b), peg: mat(0x888888),
+            armA: mat(0xc0392b), armB: mat(0x2980b9), hand: mat(0xd9a066), slip: mat(0xff2200) };
+
+// WAF table geometry (m, from r3 JSON via /config provenance)
+function box(w, h, d, m, x, y, z, rx = 0) {
+  const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
+  o.position.set(x, y, z); o.rotation.x = rx; scene.add(o); return o;
+}
+box(0.9144, 0.05, 0.66, M.table, 0, 1.016 - 0.025, 0);            // top
+box(0.1778, 0.0508, 0.1778, M.pad, -0.15, 1.016 + 0.0254, 0);      // elbow pad A
+box(0.1778, 0.0508, 0.1778, M.pad, 0.15, 1.016 + 0.0254, 0);       // elbow pad B
+box(0.254, 0.1016, 0.02, M.pad, -0.28, 1.016 + 0.05, 0.1, 0.3);    // touch pads
+box(0.254, 0.1016, 0.02, M.pad, 0.28, 1.016 + 0.05, -0.1, -0.3);
+for (const s of [-1, 1]) {
+  const peg = new THREE.Mesh(new THREE.CylinderGeometry(0.0127, 0.0127, 0.152), M.peg);
+  peg.position.set(s * 0.33, 1.016 + 0.076, 0); scene.add(peg);
+}
+const grid = new THREE.GridHelper(4, 20, 0x334455, 0x223038);
+grid.position.y = 0; scene.add(grid);
+
+function limb(rTop, rBot, m) {
+  const o = new THREE.Mesh(new THREE.CylinderGeometry(rTop, rBot, 1, 14), m);
+  scene.add(o); return o;
+}
+function ball(r, m) {
+  const o = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 12), m);
+  scene.add(o); return o;
+}
+const UP = new THREE.Vector3(0, 1, 0);
+function place(mesh, p0, p1) {
+  const a = new THREE.Vector3(...p0), b = new THREE.Vector3(...p1);
+  const d = b.clone().sub(a), len = d.length();
+  mesh.position.copy(a).addScaledVector(d, 0.5);
+  mesh.scale.set(1, len, 1);
+  mesh.quaternion.setFromUnitVectors(UP, d.normalize());
+  return d.normalize();
+}
+// Flagged visual proportions (NOT anatomy): finger segment lengths/poses.
+const FINGERS = [
+  { x: -0.033, lens: [0.042, 0.026, 0.022] },  // index
+  { x: -0.011, lens: [0.046, 0.028, 0.024] },  // middle
+  { x: 0.011, lens: [0.043, 0.027, 0.023] },   // ring
+  { x: 0.033, lens: [0.034, 0.022, 0.020] },   // pinky
+];
+function buildFist(skin, sleeve, sgn) {
+  const g = new THREE.Group();
+  const palm = new THREE.Mesh(new THREE.BoxGeometry(0.085, 0.075, 0.035), skin);
+  palm.position.y = 0.01; g.add(palm);
+  const fingers = [];
+  for (const f of FINGERS) {
+    let parent = g, y = 0.048;
+    const segs = [];
+    for (let j = 0; j < 3; j++) {
+      const pivot = new THREE.Group();
+      pivot.position.set(f.x, y, 0.004);
+      const seg = new THREE.Mesh(new THREE.BoxGeometry(0.018, f.lens[j], 0.02), skin);
+      seg.position.y = -f.lens[j] / 2;
+      pivot.add(seg); parent.add(pivot); segs.push(pivot);
+      parent = pivot; y = -f.lens[j];
+    }
+    fingers.push(segs);
+  }
+  const thumbBase = new THREE.Group();           // thumb, radial side (mirrored)
+  thumbBase.position.set(-0.052 * sgn, 0.01, 0.012);
+  thumbBase.rotation.z = 0.9 * sgn;
+  const th1 = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.045, 0.022), skin);
+  th1.position.y = -0.022; thumbBase.add(th1);
+  const th2p = new THREE.Group(); th2p.position.y = -0.045; th2p.rotation.x = -0.7;
+  const th2 = new THREE.Mesh(new THREE.BoxGeometry(0.018, 0.035, 0.02), skin);
+  th2.position.y = -0.017; th2p.add(th2); thumbBase.add(th2p); g.add(thumbBase);
+  const cuff = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.036, 0.03, 12), sleeve);
+  cuff.position.y = 0.062; g.add(cuff);
+  scene.add(g);
+  return { group: g, fingers,
+    setCurl(c) {  // c in [0,1] from grip param: 0 open, 1 full fist
+      const bend = [1.35 * c + 0.1, 1.5 * c + 0.1, 0.9 * c + 0.05];
+      for (const segs of fingers) segs.forEach((p, j) => { p.rotation.x = bend[j]; });
+    } };
+}
+const FMAX = { biceps_long: 485.8, triceps_long: 1580.6, pronator_teres: 55.0 };  // flagged: model Fmax
+const rig = {};
+for (const s of ["A", "B"]) {
+  const sleeve = M["arm" + s];
+  rig[s] = { upper: limb(0.052, 0.042, sleeve),
+             delt: ball(0.062, sleeve), bicep: ball(0.05, M.hand),
+             elbow: ball(0.032, M.hand), fore: limb(0.038, 0.03, sleeve),
+             wrist: ball(0.026, M.hand), fist: buildFist(M.hand, sleeve, s === "A" ? 1 : -1) };
+}
+
+let frames = [], playing = false, fi = 0, Ft = [], slipped = [], gripCurl = 1;
+function setRigVisible(v) {
+  for (const s of ["A", "B"]) {
+    const r = rig[s];
+    for (const m of [r.upper, r.delt, r.bicep, r.elbow, r.fore, r.wrist]) m.visible = v;
+    r.fist.group.visible = v;
+  }
+}
+setRigVisible(false);
+const banner = document.getElementById("banner");
+const status = document.getElementById("status");
+
+function drawFrame(i) {
+  const f = frames[i];
+  if (!f) return;
+  setRigVisible(true);
+  for (const s of ["A", "B"]) {
+    const p = f[s], r = rig[s], q = f["joints_" + s];
+    const sgn = s === "A" ? 1 : -1;
+    place(r.upper, p.shoulder, p.elbow);
+    r.delt.position.set(...p.shoulder);
+    r.elbow.position.set(...p.elbow);
+    const dir = place(r.fore, p.elbow, p.wrist);
+    r.fore.rotateY(sgn * (q ? q.phi : 0));       // roll twist visual
+    r.wrist.position.set(...p.wrist);
+    const g = r.fist.group;
+    g.position.set(...p.grip);
+    g.quaternion.setFromUnitVectors(UP, dir.clone().negate());  // fingers extend past the wrist
+    g.rotateY(sgn * (q ? q.phi : 0));
+    g.rotateX(q ? q.wfe : 0);
+    r.fist.setCurl(gripCurl);
+    const F = f["forces_" + s] || {};
+    const fb = Math.min(1, (F.biceps_long || 0) / FMAX.biceps_long);
+    r.bicep.scale.set(1 + 0.3 * fb, 1 + 0.15 * fb, 1 + 0.3 * fb);
+    r.bicep.position.set(...p.shoulder).lerp(new THREE.Vector3(...p.elbow), 0.35);
+    const slip = slipped[i];
+    for (const m of [r.upper, r.fore]) m.material = slip ? M.slip : M["arm" + s];
+  }
+  banner.textContent = window.__winner ? `PIN — ${window.__winner} wins` : (slipped[i] ? "SLIP" : "");
+  status.textContent = `t=${f.t.toFixed(2)}s  Ft=${Ft[i] !== undefined ? Ft[i].toFixed(1) : "?"} N`;
+  document.getElementById("scrub").value = i;
+}
+
+async function init() {
+  const techs = await (await fetch("/techniques")).json();
+  for (const id of ["techA", "techB"]) {
+    const sel = document.getElementById(id);
+    for (const name of Object.keys(techs)) {
+      const o = document.createElement("option");
+      o.value = name; o.textContent = name;
+      if (techs[name].unmapped_no_object.length)
+        o.textContent += ` (no ${techs[name].unmapped_no_object.join(",")})`;
+      sel.appendChild(o);
+    }
+  }
+  document.getElementById("techA").value = "top_roll";
+  document.getElementById("techB").value = "defensive";
+  status.textContent = "ready — pick techniques, Run match.";
+}
+document.getElementById("run").onclick = async () => {
+  status.textContent = "simulating (1 kHz engine)…";
+  const body = { duration_s: parseFloat(document.getElementById("dur").value),
+    athlete_A: { mode: "technique", technique: document.getElementById("techA").value, grip: 1.0 },
+    athlete_B: { mode: "technique", technique: document.getElementById("techB").value, grip: 1.0 } };
+  const r = await fetch("/simulate", { method: "POST",
+    headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  if (!r.ok) { status.textContent = "server error: " + await r.text(); return; }
+  const data = await r.json();
+  frames = data.frames; Ft = data.contact_Ft; slipped = data.slipped;
+  gripCurl = Math.min(1, Math.max(0, (body.athlete_A.grip + body.athlete_B.grip) / 2));
+  window.__winner = data.winner;
+  document.getElementById("scrub").max = frames.length - 1;
+  fi = 0; playing = true;
+  document.getElementById("play").disabled = false;
+  drawFrame(0);
+};
+document.getElementById("play").onclick = () => { playing = !playing; };
+document.getElementById("scrub").oninput = (e) => { playing = false; fi = +e.target.value; drawFrame(fi); };
+(function loop() {
+  requestAnimationFrame(loop);
+  if (playing && frames.length) {
+    fi = (fi + 1) % frames.length;
+    if (fi === 0 && window.__winner) playing = false;
+    drawFrame(fi);
+  }
+  renderer.render(scene, camera);
+})();
+addEventListener("resize", () => {
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+init();
+</script>
+</body>
+</html>

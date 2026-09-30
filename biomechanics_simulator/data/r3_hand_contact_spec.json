@@ -1,0 +1,139 @@
+{
+ "meta": {
+  "source": "R3_HAND_CONTACT_SPEC.md (transcription only)",
+  "status": "DORMANT until Milestone 4: values registered here, NOT wired to any dynamics. No contact solver exists yet.",
+  "rule": "single-mu values FORBIDDEN; chalk default OFF"
+ },
+ "friction": {
+  "law": "|Ft|<=mu*Fn Coulomb cone [STD]; Stribeck per E-05 (form kept, params U)",
+  "skin_skin": {
+   "status": "MODEL_DERIVED - REQUIRES CALIBRATION",
+   "proxies": [
+    "fingertip/glass-ish ~0.25 dry / ~1.4 wet (0.5N) [E:Beilstein]",
+    "finger/various 0.13-1.16 dry, 0.76-1.03 wet [E:Merrick-n40]",
+    "sandpaper#320 0.61\u00b10.10 [E]",
+    "mu=k*NF^(n-1) n\u22480.66 load falloff [E]",
+    "palm +25% vs forearm [E]",
+    "wet>2x dry, to 10x occluded [E]",
+    "chalk CONTESTED (Li2001 decreases vs Clarke2024 helps-dry) -> NO bonus [E-conflict=U]"
+   ]
+  },
+  "skin_table": {
+   "status": "MODEL_DERIVED - REQUIRES CALIBRATION",
+   "proxies": [
+    "grabrails dry\u2248wet(n.s.), soapy<<dry/wet; textured-best-soapy (n=30) [E:O'Meara]",
+    "PU-fleece mimics skin DRY [E:Derler/Gerhardt]",
+    "vinyl/rexin pad CoF: UNKNOWN"
+   ]
+  }
+ },
+ "soft_tissue": {
+  "pulp": "viscoelastic nonlinear; compliant <1N; FULLY COMPRESSED >4N (contact-solver flag) [E:Serina1997-n20]",
+  "palm": "LD stiffness >50% above SD; rate x2-2.75; CV 39-110% as distribution [E:PLOS2021]",
+  "forefinger_spec_n117": "two-stage elasticity + transition displacement; age/gender independent [E: extraction target]",
+  "rayleigh_beta_s": 0.0004,
+  "rayleigh_beta_tag": "M:Wu2006-soft-tissue",
+  "flesh_MA_shift": "UNKNOWN (slot unwired)"
+ },
+ "contact_model": {
+  "normal": "Hunt-Crossley F=k*d^n+lam*d^n*ddot (n\u22481.5) [STD-form]; k/lam/n ALL UNKNOWN",
+  "tangential": "Coulomb cone + Stribeck E-05 [STD-form, params U]",
+  "stick_slip": "not observed in source protocols: slip = cone violation only [E:Franklin]"
+ },
+ "table_WAF": {
+  "top_in": "36x26; heights 40 stand / 28 sit [E:WAF2024]",
+  "elbow_pad_in": "7x7x2 dense foam vinyl, 2in from edge [E:WAF]",
+  "touch_pad_in": "10x4 angled [E:WAF]",
+  "peg_in": "1dia x 6high [E:WAF]",
+  "forces": {
+   "pad_compression": "UNKNOWN",
+   "pad_mu": "UNKNOWN",
+   "peg_reactions": "UNKNOWN"
+  }
+ },
+ "grip_strength_N": {
+  "male_mean": [
+   462,
+   "E:n12-matches-P071-442"
+  ],
+  "female_mean": [
+   211,
+   "E:n12-matches-P071-215"
+  ],
+  "note": "order-of-magnitude guardrail for grip-map Fmax ONLY (R3 \u00a74); population-specific, override per cohort"
+ },
+ "table_geometry_SI": {
+  "tag": "E:WAF2024-rules (converted in->m, factors shown)",
+  "top_L_m": [
+   0.9144,
+   "36in"
+  ],
+  "top_W_m": [
+   0.6604,
+   "26in"
+  ],
+  "height_stand_m": [
+   1.016,
+   "40in"
+  ],
+  "height_sit_m": [
+   0.7112,
+   "28in"
+  ],
+  "elbow_pad_m": [
+   0.1778,
+   "7x7in"
+  ],
+  "elbow_pad_thick_m": [
+   0.0508,
+   "2in"
+  ],
+  "touch_pad_m": [
+   0.254,
+   0.1016,
+   "10x4in"
+  ],
+  "peg_dia_m": [
+   0.0254,
+   "1in"
+  ],
+  "peg_h_m": [
+   0.1524,
+   "6in"
+  ],
+  "forces": "ALL UNKNOWN (pad compression/mu, peg reactions)"
+ },
+ "hand_provisional": {
+  "tag": "PROVISIONAL-estimate (no R1 values exist); COM at palm center per spec",
+  "mass_kg": 0.4,
+  "com_m": 0.05,
+  "inertia_kgm2": 0.001,
+  "grip_lever_m": 0.08
+ },
+ "dynamics_activation_M6": {
+  "note": "M6 ACTIVATION: geometry rows above are E:WAF2024 and loadable; EVERY dynamics coefficient below is UNKNOWN (no measurements exist) and stays caller-supplied \u2014 activation yields geometry only.",
+  "pad_HuntCrossley_k_d_n": "UNKNOWN (no pad stiffness data)",
+  "pad_mu": "UNKNOWN (vinyl/rexin unmeasured)",
+  "peg_mu": "UNKNOWN",
+  "peg_HC": "UNKNOWN",
+  "pin_pad_HC": "UNKNOWN",
+  "pin_pad_mu": "UNKNOWN",
+  "pin_force_threshold": "UNKNOWN (caller policy, not physics)",
+  "table_mu": "UNKNOWN",
+  "elbow_world_position": "UNKNOWN (fixed base, no frame)"
+ },
+ "uncertainty": {
+  "tag": "PROVISIONAL (target-interface distributions UNKNOWN)",
+  "friction_mu": {
+   "dist": "uniform",
+   "min": 0.2,
+   "max": 1.0,
+   "note": "spans proxy observations 0.13-1.16"
+  },
+  "fatigue_rates": {
+   "dist": "lognormal",
+   "sigma": 0.5,
+   "median_mult": 1.0
+  }
+ }
+}

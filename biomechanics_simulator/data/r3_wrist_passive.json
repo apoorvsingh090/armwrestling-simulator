@@ -1,0 +1,11 @@
+{"meta": {"source": "R3_HAND_CONTACT_SPEC.md §1 (Delp1996 n=10 males; wrist-axes study; Li-2005 coupling is KINEMATIC, not passive)",
+  "form": "PCHIP through E-anchored points (interpolation pattern, NOT fitted coefficients); conservative (function of angle only)",
+  "sign_rule": "RESTORING torques (oppose displacement, point toward neutral). FE: + = flexion torque. RUD: + = radial-deviation torque.",
+  "rule": "Li-2005 ratios describe MOTION coupling; they do NOT shape these torque curves"},
+ "wrist_fe_Nm": {"unit": "Nm",
+  "points_deg_Nm_tag": [[-90, 1.2, "E:Delp1996-90ext"], [0, 0.0, "E:neutral"],
+   [90, -0.5, "E:Delp1996-90flex"]],
+  "note": "asymmetric (1.2 vs 0.5) preserved; ROM limits -70/+80 evaluate by interpolation"},
+ "wrist_rud_Nm": {"unit": "Nm",
+  "points_deg_Nm_tag": [[-30, 0.9, "E:Delp1996-fullUD"], [0, 0.0, "E:neutral"],
+   [20, 0.0, "E:Delp1996-near-zero-radial"]]}}

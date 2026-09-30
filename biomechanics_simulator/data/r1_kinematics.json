@@ -1,0 +1,10 @@
+{"meta": {"source": "R1_SKELETAL_KINEMATIC_SPEC.md; Wu2005; Wilps2025; Fornalski review",
+  "note": "Elbow M1 subset only. Carrying-angle function = Wilps means; linear interp at runtime"},
+ "elbow": {"zero": "full extension = 0 deg (clinical)",
+  "anatomical_stops_deg": {"min": 0.0, "max": 145.0, "tag": "E:P006/AAOS"},
+  "feasible_deg": {"min": 30.0, "max": 130.0, "tag": "ASSUMPTION:P018-ADL-placeholder"},
+  "flexion_axis": "trochlea-capitulum centers; capitellum flexed fwd ~40deg; axis internally rotated ~14deg; medial trochlear ridge valgus 6-8deg",
+  "carrying_angle_deg": {"male": "11-14", "female": "13-16", "tag": "E:Fornalski-review"},
+  "varus_change_vs_extension_deg": {"60": "3.9±3.4", "90": "7.3±5.2", "120": "8.9±7.1",
+   "tag": "E:Wilps2025-n7-cadaveric-dependent-arm", "note": "change concentrated 30-90deg; ~0 between 0-30deg"},
+  "jcs_order": "Z-X-Y (e1=Zh flexion, e2=floating carrying, e3=Yf pronation)"}}
