@@ -5,7 +5,6 @@ duplicating them here would let physics and deployment drift). Controllers and
 matches are assembled from the same objects the test suite verifies.
 Run: uvicorn web.server:app  (from biomechanics_simulator/)
 """
-import math
 import os
 import sys
 import warnings

@@ -9,6 +9,7 @@ PROVISIONALS: reaction_time 0.2 s; fatigue threshold 0.3 / factor 0.7.
 import warnings
 
 from controllers.base_controller import PDController
+from controllers.sensory import SensoryState
 from controllers.recruitment import MuscleRecruitment
 from controllers.reaction import ReactionDelay
 from controllers.transitions import TechniqueTransitioner
@@ -54,7 +55,6 @@ class AIOpponent:
         self.last_decision = {}
 
     def compute_activations(self, sensory_state, dt):
-        from controllers.sensory import SensoryState
         if not isinstance(sensory_state, SensoryState):
             raise ValueError("AIOpponent consumes SensoryState only (no cheat path)")
         self._t += dt

@@ -1,0 +1,8 @@
+# Core simulator is stdlib-only Python. Dependencies are only for the web API:
+fastapi>=0.110
+pydantic>=2.0
+uvicorn>=0.29
+
+# Dev tooling (test + lint):
+pytest>=8.0
+ruff>=0.5

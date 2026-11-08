@@ -152,6 +152,7 @@ class Simulation:
                              theta_wfe=0.0, omega_wfe=0.0,
                              theta_rud=0.0, omega_rud=0.0):
         out = {}
+        arms = {}
         for name, mus in self.muscles.items():
             e = self.mt[name]
             re_ = self.roles.get(name, 0.0)
@@ -162,6 +163,7 @@ class Simulation:
             r_f = self._table_r(e["forearm"], theta, theta_f)
             r_w = self._table_r(e["wfe"], theta_wfe, theta_rud)
             r_u = self._table_r(e["wrud"], theta_wfe, theta_rud)
+            arms[name] = (r_e, r_f, r_w, r_u)
             v = (re_ * r_e * omega + rf * r_f * omega_f
                  + rwfe * r_w * omega_wfe + rwrud * r_u * omega_rud) / math.cos(mus.pennation_rad)
             L = mus.Lopt_m
@@ -172,6 +174,8 @@ class Simulation:
             L += self._wrist_len(e["wfe"], rwfe, theta_wfe, theta)
             L += self._wrist_len(e["wrud"], rwrud, theta_rud, theta)
             out[name] = (L, v)
+        # compute_torques() reuses these — they were being recomputed there.
+        self._arms_cache = arms
         return out
 
     def _forearm_restraint(self, phi, omega_f):
@@ -245,19 +249,20 @@ class Simulation:
         states = self.compute_muscle_state(theta, omega, theta_f, omega_f,
                                            theta_wfe, omega_wfe, theta_rud, omega_rud)
         tau_m, tau_mf, tau_mw, tau_mu, forces = 0.0, 0.0, 0.0, 0.0, {}
+        arms = self._arms_cache
         for name, mus in self.muscles.items():
             L, v = states[name]
             F = mus.force(activations.get(name, 0.0), L, v)
             forces[name] = F
-            e = self.mt[name]
             re_ = self.roles.get(name, 0.0)
             rf = self.f_roles.get(name, 0.0)
             rwfe = self.wfe_roles.get(name, 0.0)
             rwrud = self.wrud_roles.get(name, 0.0)
-            tau_m += re_ * self._table_r(e["elbow"], theta, theta_f) * F
-            tau_mf += rf * self._table_r(e["forearm"], theta, theta_f) * F
-            tau_mw += rwfe * self._table_r(e["wfe"], theta_wfe, theta_rud) * F
-            tau_mu += rwrud * self._table_r(e["wrud"], theta_wfe, theta_rud) * F
+            r_e, r_f, r_w, r_u = arms[name]
+            tau_m += re_ * r_e * F
+            tau_mf += rf * r_f * F
+            tau_mw += rwfe * r_w * F
+            tau_mu += rwrud * r_u * F
         tau_g = self.seg.mass_kg * self.g * self.seg.com_m * math.cos(theta)
         tau_p = self.joint.restraint_torque(theta, omega)
         if self.hand is None:

@@ -17,8 +17,10 @@ BASE = os.path.join(os.path.dirname(__file__), "..", "data")
 
 
 def load_distributions(r2_path=None, r3_path=None):
-    r2 = json.load(open(r2_path or os.path.join(BASE, "r2_mtus.json"), encoding="utf-8"))
-    r3 = json.load(open(r3_path or os.path.join(BASE, "r3_hand_contact_spec.json"), encoding="utf-8"))
+    with open(r2_path or os.path.join(BASE, "r2_mtus.json"), encoding="utf-8") as f:
+        r2 = json.load(f)
+    with open(r3_path or os.path.join(BASE, "r3_hand_contact_spec.json"), encoding="utf-8") as f:
+        r3 = json.load(f)
     return {"fmax": r2["uncertainty"]["Fmax"], "ma": r2["uncertainty"]["moment_arm"],
             "fatigue": r2["uncertainty"]["fatigue_rates"],
             "friction": r3["uncertainty"]["friction_mu"]}

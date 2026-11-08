@@ -9,6 +9,15 @@ warns when placeholder ('P') points are present (constitution rule 4).
 """
 import math
 import warnings
+from bisect import bisect_left
+
+
+def _hermite_antideriv(t, y0, y1, m0, m1, h):
+    """Antiderivative of the cubic Hermite interpolant in t (times h folds externally)."""
+    return (y0 * (t**4 / 2 - t**3 + t)
+            + h * m0 * (t**4 / 4 - 2 * t**3 / 3 + t**2 / 2)
+            + y1 * (-t**4 / 2 + t**3)
+            + h * m1 * (t**4 / 4 - t**3 / 3))
 
 
 class Pchip:
@@ -41,9 +50,7 @@ class Pchip:
         elif x >= xs[-1]:
             i, t = len(xs) - 2, 1.0
         else:
-            i = 0
-            while x > xs[i + 1]:
-                i += 1
+            i = min(max(bisect_left(xs, x) - 1, 0), len(xs) - 2)
             t = (x - xs[i]) / self._h[i]
         h00 = 2 * t**3 - 3 * t**2 + 1
         h10 = t**3 - 2 * t**2 + t
@@ -66,13 +73,11 @@ class Pchip:
             s0, s1 = max(x0, lo), min(x1, hi)
             h = self._h[i]
             t0, t1 = (s0 - x0) / h, (s1 - x0) / h
-            # antiderivative of Hermite basis in t, times h:
-            def A(t):
-                return (self.ys[i] * (t**4 / 2 - t**3 + t)
-                        + h * self._m[i] * (t**4 / 4 - 2 * t**3 / 3 + t**2 / 2)
-                        + self.ys[i + 1] * (-t**4 / 2 + t**3)
-                        + h * self._m[i + 1] * (t**4 / 4 - t**3 / 3))
-            total += h * (A(t1) - A(t0))
+            # antiderivative of the Hermite basis in t, times h
+            total += h * (_hermite_antideriv(t1, self.ys[i], self.ys[i + 1],
+                                             self._m[i], self._m[i + 1], h)
+                          - _hermite_antideriv(t0, self.ys[i], self.ys[i + 1],
+                                               self._m[i], self._m[i + 1], h))
         return sign * total
 
 
@@ -163,31 +168,50 @@ class BilinearTable:
     def _seg(grid, x):
         if len(grid) == 1:
             return 0
-        x = min(max(x, grid[0]), grid[-1])
-        i = 0
-        while i < len(grid) - 2 and x > grid[i + 1]:
-            i += 1
-        return i
+        if x <= grid[0]:
+            return 0
+        if x >= grid[-1]:
+            return len(grid) - 2
+        return min(max(bisect_left(grid, x) - 1, 0), len(grid) - 2)
 
     def is_extrapolated(self, theta_e_rad, theta_f_rad):
         return not (self.rows[0] <= theta_e_rad <= self.rows[-1]
                     and self.cols[0] <= theta_f_rad <= self.cols[-1])
 
-    def integrate_phi(self, a_phi, b_phi, theta_e_fixed, n=24):
+    def integrate_phi(self, a_phi, b_phi, theta_e_fixed, n=None):
         """Integral of r(theta_e_fixed, phi) dphi from a to b (E-12 forearm part).
 
-        Fixed Simpson n=24 (even, deterministic): exact for the piecewise-smooth
-        bilinear surface to ~1e-9 relative; keeps 1 kHz stepping affordable in
-        pure Python. NOT a tuned parameter.
+        Exact cell-wise integration: along the forearm axis the surface is
+        piecewise linear between grid lines, so the trapezoid per overlapping
+        cell is exact — no fixed quadrature order, no error knob. (Previous
+        fixed Simpson n=24 agreed to ~1e-9 but wasted table evaluations.)
+        Out-of-domain segments replicate the clamping in __call__.
         """
         if a_phi == b_phi:
             return 0.0
         lo, hi, sign = (a_phi, b_phi, 1.0) if a_phi < b_phi else (b_phi, a_phi, -1.0)
-        h = (hi - lo) / n
-        s = self(theta_e_fixed, lo) + self(theta_e_fixed, hi)
-        for k in range(1, n):
-            s += (4 if k % 2 else 2) * self(theta_e_fixed, lo + k * h)
-        return sign * s * h / 3.0
+        r, c = self.rows, self.cols
+        v = self.vals
+        if len(r) == 1 or len(c) == 1:
+            return sign * v[0][0] * (hi - lo)
+        i = self._seg(r, theta_e_fixed)
+        t = 0.0 if r[i + 1] == r[i] else (min(max(theta_e_fixed, r[0]), r[-1]) - r[i]) / (r[i + 1] - r[i])
+        w = [v[i][j] * (1.0 - t) + v[i + 1][j] * t for j in range(len(c))]
+        total = 0.0
+        # Clamped regions outside the grid (match __call__'s edge behaviour).
+        if lo < c[0]:
+            total += w[0] * (min(hi, c[0]) - lo)
+        if hi > c[-1]:
+            total += w[-1] * (hi - max(lo, c[-1]))
+        for j in range(len(c) - 1):
+            x0, x1 = max(lo, c[j]), min(hi, c[j + 1])
+            if x1 <= x0:
+                continue
+            span = c[j + 1] - c[j]
+            wa = w[j] + (w[j + 1] - w[j]) * (x0 - c[j]) / span
+            wb = w[j] + (w[j + 1] - w[j]) * (x1 - c[j]) / span
+            total += 0.5 * (wa + wb) * (x1 - x0)
+        return sign * total
 
 
 def load_elbow_tables(path):

@@ -57,6 +57,12 @@ def build_simulation(theta0_deg=80.0):
 
 
 def torques(sys, theta, omega, a_bic, a_tri, f_ext=0.0):
+    """LEGACY Milestone-1 1-DOF reference kept for the equilibrium_demo only.
+
+    The physics of record is Simulation.compute_torques (2-DOF, coupled
+    wrist/forearm); this function duplicates the minimal 1-DOF stack for
+    print-out comparison and must not be used for new work.
+    """
     bic, tri = sys["muscles"]
     ma = sys["ma"]
     seg, joint = sys["seg"], sys["joint"]

@@ -7,6 +7,7 @@ hand-wrist pad contact, M6 refinement). Default pin_x 0.15 m PROVISIONAL.
 """
 import warnings
 
+from controllers.sensory import SensoryState
 from core.hand_to_hand import HandToHandContact
 from core.mirror import lateral_hand_position
 from core.contact_detection import GripModel
@@ -37,24 +38,6 @@ class MatchSimulation:
         self.pin_pads = dict(pin_pads) if pin_pads else {}
         self.controller_A = controller_A
         self.controller_B = controller_B
-        self.impulse_A = 0.0  # cumulative contact impulse bookkeeping (Newton audit)
-        self.impulse_B = 0.0
-        for label, v in (("friction_mu", friction_mu), ("tangential_k", tangential_k),
-                         ("tangential_c", tangential_c), ("lever_m", lever_m)):
-            if v is None:
-                raise ValueError(f"{label} UNKNOWN for the grasp pair: pass explicit value")
-        for sim, tag in ((athlete_A, "A"), (athlete_B, "B")):
-            if abs(sim.lever_wg - lever_m) > 1e-15:
-                raise ValueError(f"grasp lever must equal sim grip lever (power consistency), {tag}")
-        self.A, self.B = athlete_A, athlete_B
-        self.table = dict(table_planes) if table_planes else {}
-        self.grasp = HandToHandContact(friction_mu, tangential_k, tangential_c, lever_m)
-        self.grip_A = GripModel(max_grip_N=max_grip_A, mu=friction_mu)
-        self.grip_B = GripModel(max_grip_N=max_grip_B, mu=friction_mu)
-        self.lever = float(lever_m)
-        self.pin_x = float(pin_x_m)
-        warnings.warn("[Match] pin_x default 0.15m PROVISIONAL (elbow world position unmeasured).",
-                      UserWarning, stacklevel=2)
         self.impulse_A = 0.0  # cumulative contact impulse bookkeeping (Newton audit)
         self.impulse_B = 0.0
 
@@ -103,7 +86,6 @@ class MatchSimulation:
         """Build the sensory view for one athlete (values ONLY: positions,
         velocities, contact magnitude, own joints/fatigue, pin). No sim
         references escape — the anti-cheat boundary lives here."""
-        from controllers.sensory import SensoryState
         x_self = self.lever * sim.phi * side
         v_self = self.lever * sim.omega_f * side
         v_opp = -self.lever * opp_sim.omega_f * side

@@ -6,8 +6,6 @@ Newton's third law is EXACT: F_on_B = -F_on_A by single negation.
 k/ct/mu are constructor-REQUIRED (all UNKNOWN in r3 for this pair).
 No-slip emerges (bounded dt); slip emerges (cone-saturated, dt grows).
 """
-from core.mirror import lateral_hand_position
-
 
 class HandToHandContact:
     def __init__(self, friction_mu, tangential_k, tangential_c, lever_m):
@@ -36,6 +34,3 @@ class HandToHandContact:
         return {"Fn": fn, "Ft_on_A": ft_A, "Ft_on_B": -ft_A,
                 "slipped": slipped, "delta_t": self.delta_t, "cap": cap}
 
-    def check_slip(self, F_tangential_required, F_normal):
-        slipped = abs(F_tangential_required) > self.mu * F_normal
-        return slipped

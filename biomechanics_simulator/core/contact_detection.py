@@ -57,7 +57,8 @@ def load_table_planes(path):
     Geometry E:WAF2024; all force parameters UNKNOWN (not loaded).
     """
     import json
-    g = json.load(open(path, encoding="utf-8"))["table_geometry_SI"]
+    with open(path, encoding="utf-8") as f:
+        g = json.load(f)["table_geometry_SI"]
     top = g["height_stand_m"][0]
     pad_top = top + g["elbow_pad_thick_m"][0]
     return {"table_top": PlaneSurface("table_top", [0, 0, 1], -top),

@@ -6,7 +6,6 @@ are not comparable); OAT ignores interactions (documented).
 Parameter application is non-invasive: Fmax/kf/kr/mu/grip mutated + restored;
 MA scales rebuild table objects (originals never mutated).
 """
-import copy
 import math
 import warnings
 
