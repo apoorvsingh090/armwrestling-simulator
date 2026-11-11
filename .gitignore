@@ -4,3 +4,5 @@ __pycache__/
 outputs/
 *.egg-info/
 .env
+blender/frames/
+*.blend1
